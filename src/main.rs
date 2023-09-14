@@ -1,7 +1,5 @@
 use std::path::PathBuf;
 
-
-
 fn main() {
     let target_path = std::env::args().nth(1).expect("Program requires a target path as argument");
 
@@ -34,10 +32,10 @@ fn main() {
         
         let lines = content.lines()
             .filter(|s| s.starts_with("(require"))
-            .map(|s| s.trim_start_matches("(require").trim_end_matches(")"))
+            .map(|s| s.trim_start_matches("(require").trim_end_matches(')'))
             .map(|s| s.trim())
-            .filter(|s| s.starts_with("\"") && s.ends_with("\"")) // There are some native dependencies that we don't want to include
-            .map(|s| s.trim_start_matches("\"").trim_end_matches("\""))
+            .filter(|s| s.starts_with('\"') && s.ends_with('\"')) // There are some native dependencies that we don't want to include
+            .map(|s| s.trim_start_matches('\"').trim_end_matches('\"'))
             .collect::<Vec<_>>();
 
         // If a line starts with "./" we can just remove it
