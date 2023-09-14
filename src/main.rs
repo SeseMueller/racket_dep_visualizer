@@ -1,3 +1,4 @@
+#![warn(clippy::all, clippy::pedantic)]
 use std::path::PathBuf;
 
 fn main() {
@@ -6,9 +7,9 @@ fn main() {
     // Visits the path recursively and gets all files that are .rkt files
     let dir = walkdir::WalkDir::new(target_path.clone())
         .into_iter()
-        .filter_map(|e| e.ok())
+        .filter_map(std::result::Result::ok)
         .filter(|e| e.file_type().is_file())
-        .filter(|e| e.path().extension().map(|s| s == "rkt").unwrap_or(false))
+        .filter(|e| e.path().extension().map_or(false, |s| s == "rkt"))
         .map(|e| e.path().to_owned())
         .collect::<Vec<_>>();
 
@@ -28,12 +29,12 @@ fn main() {
     let mut dependencies: Vec<[PathBuf; 2]> = Vec::new(); // From, To
     
     for file in dir {
-        let content = std::fs::read_to_string(file.clone()).unwrap_or("".to_owned()); // Skip if we can't read the file
+        let content = std::fs::read_to_string(file.clone()).unwrap_or(String::new()); // Skip if we can't read the file
         
         let lines = content.lines()
             .filter(|s| s.starts_with("(require"))
             .map(|s| s.trim_start_matches("(require").trim_end_matches(')'))
-            .map(|s| s.trim())
+            .map(str::trim)
             .filter(|s| s.starts_with('\"') && s.ends_with('\"')) // There are some native dependencies that we don't want to include
             .map(|s| s.trim_start_matches('\"').trim_end_matches('\"'))
             .collect::<Vec<_>>();
@@ -83,7 +84,7 @@ fn main() {
     // graph TD is the name of the type of graph we want to create
     println!("graph TD");
     for dep in dependencies {
-        println!("{}", dep);
+        println!("{dep}");
     }
 
     println!("```");
